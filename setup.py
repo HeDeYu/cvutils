@@ -29,7 +29,9 @@ readme = read("README.rst")
 changelog = read("CHANGELOG.rst")
 
 install_requires = [
-    # eg: "numpy==1.11.1", "six>=1.7",
+    "numpy>=1.14.0",
+    "opencv-python",
+    # "pyutils"
 ]
 
 extras_require = {
