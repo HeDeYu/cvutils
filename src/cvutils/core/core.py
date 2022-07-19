@@ -3,10 +3,13 @@
 # @Author   :Deyu He
 # @Time     :2022/7/19 20:21
 
+# from typing import List, Tuple, Union
+
 import numpy as np
 
 __all__ = [
     "as_array",
+    # "check_array",
     "check_array_shape",
 ]
 

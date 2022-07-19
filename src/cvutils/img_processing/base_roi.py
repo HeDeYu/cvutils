@@ -51,10 +51,10 @@ class BaseROI(abc.ABC):
         """
         pass
 
-    @abc.abstractmethod
-    def scale(self, *args, **kwargs):
-        """Scale(inplace) roi"""
-        pass
+    # @abc.abstractmethod
+    # def scale(self, *args, **kwargs):
+    #     """Scale(inplace) roi"""
+    #     pass
 
     @abc.abstractmethod
     def expand(self, *args, **kwargs):
@@ -67,32 +67,32 @@ class BaseROI(abc.ABC):
         """
         pass
 
-    @abc.abstractmethod
-    def transform(
-        self, translation, rotate_angle_deg, rot_center=None, return_trans_M=False
-    ):
-        """Transform(inplace) roi by rotation and translation on 2d image plane
-
-        Args:
-            translation (tuple, list, array_like): translation component
-                Translation component represented by array_like object with 2 entries
-
-            rotate_angle_deg (float): rotation component
-                Rotation component represented by angle of rotation in degree.
-                A positive value means rotate clockwise while a negative
-                one means rotate counterclockwise.
-
-            rot_center (tuple): rotation center.
-                If is None, it will be set to the center of ROI.
-
-            return_trans_M (bool): whether to return the transform matrix
-
-        Notes:
-            The coordinate system frame of image plane built like this:
-            the origin is the left-top corner of image, and x-axis directs
-            right while y-axis directs down.
-        """
-        pass
+    # @abc.abstractmethod
+    # def transform(
+    #     self, translation, rotate_angle_deg, rot_center=None, return_trans_M=False
+    # ):
+    #     """Transform(inplace) roi by rotation and translation on 2d image plane
+    #
+    #     Args:
+    #         translation (tuple, list, array_like): translation component
+    #             Translation component represented by array_like object with 2 entries
+    #
+    #         rotate_angle_deg (float): rotation component
+    #             Rotation component represented by angle of rotation in degree.
+    #             A positive value means rotate clockwise while a negative
+    #             one means rotate counterclockwise.
+    #
+    #         rot_center (tuple): rotation center.
+    #             If is None, it will be set to the center of ROI.
+    #
+    #         return_trans_M (bool): whether to return the transform matrix
+    #
+    #     Notes:
+    #         The coordinate system frame of image plane built like this:
+    #         the origin is the left-top corner of image, and x-axis directs
+    #         right while y-axis directs down.
+    #     """
+    #     pass
 
     @abc.abstractmethod
     def contain(self, xy):
