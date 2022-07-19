@@ -30,7 +30,7 @@ changelog = read("CHANGELOG.rst")
 
 install_requires = [
     "numpy>=1.14.0",
-    "opencv-python",
+    # "opencv-python",
     # "pyutils"
 ]
 
