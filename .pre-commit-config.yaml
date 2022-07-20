@@ -45,10 +45,10 @@ repos:
     entry: tox
     args: [-e gitlint, --, --msg-filename]
 
-  - id: test
-    name: test
-    stages: [push]
-    language: system
-    entry: tox
-    types: [python]
-    pass_filenames: false
+#  - id: test
+#    name: test
+#    stages: [push]
+#    language: system
+#    entry: tox
+#    types: [python]
+#    pass_filenames: false
