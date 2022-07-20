@@ -36,6 +36,7 @@ install_requires = [
 
 extras_require = {
     "dev": [
+        "gitlint==0.17.0"
         "black==22.3.0",
         "isort==5.7.0",
         "flake8==3.8.4",
