@@ -365,3 +365,20 @@ class PolygonROI(BaseROI):
     #
     #     matrix, _ = cv2.findHomography(self._pts_nx2, jitter_pts_nx2)
     #     return matrix
+
+    @classmethod
+    def create_from_cv2_cnts(cls, cnts) -> List:
+        """
+        Convert contours returned by cv2.findContours(mode=cv2.RETR_EXTERNAL) into list of PolygonROI instances
+
+        Args:
+            cnts: contours returned by cv2.findContours(mode=cv2.RETR_EXTERNAL)
+
+        Returns:
+            list of PolygonROI instances
+        """
+        cnt_items = []
+        for cnt in cnts:
+            cnt = np.array([x[0] for x in cnt])
+            cnt_items.append(PolygonROI(cnt))
+        return cnt_items
