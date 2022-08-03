@@ -4,6 +4,7 @@
 # @Time     :2022/7/11 20:18
 
 import math
+from pathlib import Path
 from typing import List, Tuple, Union
 
 import cv2
@@ -17,7 +18,59 @@ __all__ = [
     "imshow",
     "add_title_to_img",
     "grid_images",
+    "imread",
+    "imwrite",
 ]
+
+
+def imread(filename, flags=cv2.IMREAD_UNCHANGED, raise_if_failed=False) -> np.ndarray:
+    """Read image from file
+
+    Args:
+        filename(str, Path): filename of reading image
+        flags(int): Flag that can take values of cv2::ImreadModes
+            Refers to opencv.imread for more details
+        raise_if_failed(bool): Raise exception if failed or not
+            For cv2.imread, a None object will be returned if read failed.
+            If set, an exception will be raised
+            instead of return None.
+
+    Returns:
+        np.ndarray: reading image
+
+    Raises:
+        RRCVException: If `raise_if_failed` is set, and reading process failed
+
+    """
+    filename = Path(filename)
+
+    img = cv2.imread(filename.as_posix(), flags)
+    read_success = isinstance(img, np.ndarray)
+
+    if not read_success and raise_if_failed:
+        raise Exception(f"read image {filename} failed!")
+
+    return img
+
+
+def imwrite(filename, img, params=None) -> bool:
+    """Write image to file
+
+    Args:
+        filename(str, Path): filename of writing image
+        img(np.ndarray): writing image
+        params: Format-specific parameters
+            Refers to opencv.imwrite for more details
+
+    Returns:
+        bool: Write image success or failed
+
+    """
+    filename = Path(filename)
+
+    write_success = cv2.imwrite(filename.as_posix(), img, params)
+
+    return write_success
 
 
 def add_title_to_img(
