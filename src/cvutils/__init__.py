@@ -1,10 +1,11 @@
 """Top-level package for CvUtils."""
 
-from . import core, highgui, img_processing, visualization
+from . import core, highgui, img_processing, misc, visualization
 from ._version import get_versions
 from .core import *  # noqa: F401, F403
 from .highgui import *  # noqa: F401, F403
 from .img_processing import *  # noqa: F401, F403
+from .misc import *  # noqa: F401, F403
 from .visualization import *  # noqa: F401, F403
 
 __author__ = """Deyu He"""
@@ -17,3 +18,4 @@ __all__ += img_processing.__all__
 __all__ += highgui.__all__
 __all__ += visualization.__all__
 __all__ += core.__all__
+__all__ += misc.__all__
