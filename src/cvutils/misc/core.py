@@ -6,7 +6,7 @@
 import cv2
 import numpy as np
 
-from ..core.core import check_array
+from ..core.core import check_array, check_array_dtype
 from ..img_processing.polygon_roi import PolygonROI
 from ..img_processing.rect_roi import RectROI
 
@@ -17,14 +17,20 @@ __all__ = [
     "draw_cnts_on_img_by_colored_mask",
     "draw_cnts_on_img_by_natural_coding_mask",
     "convert_natural_coding_to_mask",
+    "cal_pts_fn_fp",
+    "cal_hit_num",
+    "cal_components_hit_num",
+    "cal_components_fn_fp",
 ]
 
 
-def draw_bboxes_on_img(img, bboxes, color=(0, 255, 0)):
-    for bbox in bboxes:
-        if bbox[0] < bbox[2] and bbox[1] < bbox[3]:
-            RectROI.create_from_xyxy(*bbox).draw(img, color, thickness=1)
-    return img
+def convert_natural_coding_to_mask(natural_coding, color_list):
+    mask = np.zeros(
+        (natural_coding.shape[0], natural_coding.shape[1], 3), dtype=np.uint8
+    )
+    for idx, color in enumerate(color_list):
+        mask[np.where(cv2.inRange(natural_coding, idx, idx))] = color
+    return mask
 
 
 def get_mask_with_designated_color(mask, color, max_val=255):
@@ -81,6 +87,13 @@ def draw_cnts_on_img_by_colored_mask(img, mask, color_list, thickness=-1):
     return img
 
 
+def draw_bboxes_on_img(img, bboxes, color=(0, 255, 0)):
+    for bbox in bboxes:
+        if bbox[0] < bbox[2] and bbox[1] < bbox[3]:
+            RectROI.create_from_xyxy(*bbox).draw(img, color, thickness=1)
+    return img
+
+
 def draw_cnts_on_img_by_natural_coding_mask(img, mask, palette, thickness=-1):
     colored_mask = np.zeros_like(img, dtype=np.uint8)
     for idx, color in enumerate(palette):
@@ -91,10 +104,73 @@ def draw_cnts_on_img_by_natural_coding_mask(img, mask, palette, thickness=-1):
     return img_ret
 
 
-def convert_natural_coding_to_mask(natural_coding, color_list):
-    mask = np.zeros(
-        (natural_coding.shape[0], natural_coding.shape[1], 3), dtype=np.uint8
+def cal_components_hit_num(mask_1, mask_2, overlap_ratio_th=0):
+    """
+
+    Args:
+        mask_1: the 8-bit single-channel image
+        mask_2: the 8-bit single-channel image
+        overlap_ratio_th: hit_ratio(the intersect of component B in mask_2 component A in mask_1 divided by the area of component A) threshold
+
+    Returns:
+        1st: the number of the components in mask_1 are hit by mask_2
+        2nd: the total number of components in mask_1
+    """
+    check_array_dtype(np.uint8, mask_1=mask_1, mask_2=mask_2)
+    check_array(ndim=2, mask_1=mask_1, mask_2=mask_2)
+    hit_component_num = 0
+    num_components, xs_map, stats, _ = cv2.connectedComponentsWithStats(mask_1)
+    hit_map = xs_map * (mask_2 > 0)
+    for idx_component in range(1, num_components):
+        hit_pixel_num = np.count_nonzero(hit_map == idx_component)
+        components_area = stats[idx_component][-1]
+        if hit_pixel_num > 0 and hit_pixel_num / components_area > overlap_ratio_th:
+            hit_component_num += 1
+    return hit_component_num, num_components - 1
+
+
+def cal_components_fn_fp(
+    pred_mask, gt_mask, fn_overlap_ratio_th=0.0, fp_overlap_ratio_th=0.0
+):
+    """
+
+    Args:
+        pred_mask: the 8-bit single-channel image of predicted mask
+        gt_mask: the 8-bit single-channel image of ground truth mask
+        overlap_ratio_th: see cal_components_hit_num
+
+    Returns:
+        #false negative, #false positive, #groud truth, #prediction
+    """
+    gt_hit_num, gt_num = cal_components_hit_num(
+        mask_1=gt_mask, mask_2=pred_mask, overlap_ratio_th=fn_overlap_ratio_th
     )
-    for idx, color in enumerate(color_list):
-        mask[np.where(cv2.inRange(natural_coding, idx, idx))] = color
-    return mask
+    pred_hit_num, pred_num = cal_components_hit_num(
+        mask_1=pred_mask, mask_2=gt_mask, overlap_ratio_th=fp_overlap_ratio_th
+    )
+    return gt_num - gt_hit_num, pred_num - pred_hit_num, gt_num, pred_num
+
+
+def cal_hit_num(xs, ys, min_dist):
+    hit_num = 0
+    if len(ys) == 0:
+        return hit_num
+    for x in xs:
+        dists = np.sqrt(np.sum((ys - x) ** 2, axis=1))
+        _min_dist = np.min(dists)
+        if _min_dist <= min_dist:
+            hit_num += 1
+    return hit_num
+
+
+def cal_pts_fn_fp(pred_pts, gt_pts, fn_min_dist, fp_min_dist):
+    assert (
+        gt_pts.shape[1] == pred_pts.shape[1]
+    ), "gt_pts should have same point shape as pred_pts"
+
+    gt_hit_num = cal_hit_num(gt_pts, pred_pts, fn_min_dist)
+    pred_hit_num = cal_hit_num(pred_pts, gt_pts, fp_min_dist)
+    gt_num = len(gt_pts)
+    pred_num = len(pred_pts)
+
+    return gt_num, pred_num, gt_num - gt_hit_num, pred_num - pred_hit_num
