@@ -43,6 +43,7 @@ def get_mask_with_designated_color(mask, color):
     :param color: pixel with which color needed to assign 255, others 0
     :return: ret with dtype=np.uint8, ndim=2, HW=mask.HW each pixel with value of 255 or 0
     """
+    color = np.array(color)
     return cv2.inRange(mask, color, color)
 
 
