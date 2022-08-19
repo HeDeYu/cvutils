@@ -70,7 +70,9 @@ def get_cnt_items_by_color(mask, color):
     return PolygonROI.create_from_cv2_cnts(cnts)
 
 
-def draw_cnts_on_img_by_colored_mask(img, mask, palette, thickness=-1):
+def draw_cnts_on_img_by_colored_mask(
+    img, mask, palette, thickness=-1, default_color=(255, 255, 255)
+):
     """
 
     :param img:
@@ -79,13 +81,18 @@ def draw_cnts_on_img_by_colored_mask(img, mask, palette, thickness=-1):
     :param thickness:
     :return:
     """
-    for color in palette:
-        if color == [0, 0, 0]:
-            # logger.debug("bg!")
-            continue
-        polygon_roi_list = get_cnt_items_by_color(mask, color)
+    if isinstance(palette, (list, tuple)):
+        for color in palette:
+            if color == [0, 0, 0]:
+                # logger.debug("bg!")
+                continue
+            polygon_roi_list = get_cnt_items_by_color(mask, color)
+            for polygon_roi in polygon_roi_list:
+                polygon_roi.draw(img, color, thickness=thickness)
+    elif isinstance(palette, int):
+        polygon_roi_list = get_cnt_items_by_color(mask, palette)
         for polygon_roi in polygon_roi_list:
-            polygon_roi.draw(img, color, thickness=thickness)
+            polygon_roi.draw(img, default_color, thickness=thickness)
     return img
 
 
@@ -228,7 +235,7 @@ def remove_polygon_rois_with_undersized_area(cnt_items, area_th):
     )
 
 
-def remove_cnts_with_undersized_area(mask, color, mask_ret, area_th):
+def remove_cnts_with_undersized_area(mask, color, mask_ret=None, area_th=0):
     """
 
     :param mask:
