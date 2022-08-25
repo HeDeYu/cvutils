@@ -36,17 +36,17 @@ install_requires = [
 
 extras_require = {
     "dev": [
-        "gitlint==0.17.0"
-        "black==22.3.0",
-        "isort==5.7.0",
-        "flake8==3.8.4",
-        "mypy==0.800",
-        "pre-commit~=2.10.0",
-        "pytest==6.2.2",
-        "pytest-cov==2.11.1",
-        "tox~=3.21.0",
-        "gitchangelog==3.0.4",
-        "invoke==1.5.0",
+        # "gitlint==0.17.0"
+        # "black==22.3.0",
+        # "isort==5.7.0",
+        # "flake8==3.8.4",
+        # "mypy==0.800",
+        # "pre-commit~=2.10.0",
+        # "pytest==6.2.2",
+        # "pytest-cov==2.11.1",
+        # "tox~=3.21.0",
+        # "gitchangelog==3.0.4",
+        # "invoke==1.5.0",
     ]
 }
 

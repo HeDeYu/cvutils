@@ -279,6 +279,22 @@ class PolygonROI(BaseROI):
 
         return flag >= 0
 
+    def cal_intersection(self, polygon_roi):
+        x, y, w, h = self.bounding_rect
+        max_xy = x + w, y + h
+        x, y, w, h = polygon_roi.bounding_rect
+        max_xy = max(max_xy[0], x + w), max(max_xy[1], y + h)
+
+        mask_self = np.zeros((max_xy[1], max_xy[0]))
+        mask = np.zeros((max_xy[1], max_xy[0]))
+        self.draw(mask_self, 255, thickness=-1)
+        polygon_roi.draw(mask, 255, thickness=-1)
+
+        return np.sum(np.logical_and(mask_self, mask).astype(np.uint8))
+
+    def overlap(self, polygon_roi):
+        return self.cal_intersection(polygon_roi) > 0
+
     def dist(self, pts_nx2, measure_dist=True) -> List:
         # check_array(shape=(-1, 2), pts_nx2=pts_nx2)
         pts = np.array(pts_nx2, "float")
