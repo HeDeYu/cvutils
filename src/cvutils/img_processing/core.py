@@ -11,6 +11,7 @@ import numpy as np
 __all__ = [
     "pad_img",
     "resize_img",
+    "put_fg_img_on_bg_img",
 ]
 
 
