@@ -87,3 +87,24 @@ def pad_img(
         value=fill_value,
     )
     return padded_img, pad_tblr
+
+
+def put_fg_img_on_bg_img(fg_img, bg_img, top_left_xy=(0, 0), mask=None):
+    assert len(fg_img.shape) == len(bg_img.shape)
+    if len(fg_img.shape) == 3:
+        assert fg_img.shape[2] == 3
+        assert bg_img.shape[2] == 3
+
+    h, w = fg_img.shape[:2]
+    bottom_right_xy = top_left_xy[0] + w, top_left_xy[1] + h
+    H, W = bg_img.shape[:2]
+    assert bottom_right_xy[0] <= W
+    assert bottom_right_xy[1] <= H
+    if mask is None:
+        if len(fg_img.shape) == 3:
+            bg_img[
+                top_left_xy[1] : top_left_xy[0],
+                bottom_right_xy[1] : bottom_right_xy[0],
+                :,
+            ] = fg_img.copy()
+            return bg_img

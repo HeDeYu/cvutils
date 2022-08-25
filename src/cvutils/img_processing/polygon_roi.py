@@ -172,29 +172,30 @@ class PolygonROI(BaseROI):
     #     skleton = cv2.ximgproc.thinning(img)
     #     return skleton
 
-    # def transform(
-    #     self,
-    #     translation=(0, 0),
-    #     rotate_angle_deg=0,
-    #     rot_center=None,
-    #     return_trans_M=False,
-    # ):
-    #     if rot_center is None:
-    #         rot_center = self.cxcy
-    #
-    #     # Positive values mean counter-clockwise rotation
-    #     matrix = cv2.getRotationMatrix2D(
-    #         center=rot_center, angle=-rotate_angle_deg, scale=1
-    #     )
-    #     matrix[:, 2] += translation
-    #     matrix = np.concatenate([matrix, np.array([[0.0, 0.0, 1.0]])], axis=0)
-    #
-    #     self._pts_nx2 = project_pts(pts_dxn=self._pts_nx2.T, project_matrix=matrix).T
-    #
-    #     if not return_trans_M:
-    #         return None
-    #
-    #     return matrix
+    def transform(
+        self,
+        translation=(0, 0),
+        rotate_angle_deg=0,
+        rot_center=None,
+        return_trans_M=False,
+    ):
+        pass
+        # if rot_center is None:
+        #     rot_center = self.cxcy
+        #
+        # # Positive values mean counter-clockwise rotation
+        # matrix = cv2.getRotationMatrix2D(
+        #     center=rot_center, angle=-rotate_angle_deg, scale=1
+        # )
+        # matrix[:, 2] += translation
+        # matrix = np.concatenate([matrix, np.array([[0.0, 0.0, 1.0]])], axis=0)
+        #
+        # self._pts_nx2 = project_pts(pts_dxn=self._pts_nx2.T, project_matrix=matrix).T
+        #
+        # if not return_trans_M:
+        #     return None
+        #
+        # return matrix
 
     # def scale(self, fx, fy, return_trans_M=False):
     #     """Scale(inplace) rectangle
