@@ -104,8 +104,8 @@ def put_fg_img_on_bg_img(fg_img, bg_img, top_left_xy=(0, 0), mask=None):
     if mask is None:
         if len(fg_img.shape) == 3:
             bg_img[
-                top_left_xy[1] : top_left_xy[0],
-                bottom_right_xy[1] : bottom_right_xy[0],
+                top_left_xy[1] : bottom_right_xy[1],
+                top_left_xy[0] : bottom_right_xy[0],
                 :,
             ] = fg_img.copy()
             return bg_img
