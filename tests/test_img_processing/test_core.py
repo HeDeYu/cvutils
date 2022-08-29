@@ -8,7 +8,12 @@ from unittest import TestCase
 
 import numpy as np
 
-from cvutils.img_processing import flip_img, flip_pts, rotate_and_scale_img
+from cvutils.img_processing import (
+    flip_img,
+    flip_img_with_pts,
+    flip_pts,
+    rotate_and_scale_img,
+)
 
 
 class TestCore(TestCase):
@@ -43,56 +48,57 @@ class TestCore(TestCase):
             getattr(self, "block")[:, :, :] * 128
         )
         self.src = src
+        self.flip_flags = ["vertical", "horizontal", "diagonal"]
+        self.pts = np.array(
+            [
+                [getattr(self, "block_wh") * 0.5, getattr(self, "block_wh") * 1.5],
+                [getattr(self, "block_wh") * 2.0, 0.0],
+                [getattr(self, "block_wh") * 2.5, getattr(self, "block_wh") * 0.5],
+                [getattr(self, "block_wh") * 1.5, getattr(self, "block_wh") * 1.8],
+            ]
+        )
 
     def tearDown(self) -> None:
         pass
 
     def test_flip_img(self):
         src = copy.deepcopy(self.src)
-        dst_v = flip_img(src, "vertical")  # noqa: F841
-        dst_h = flip_img(src, "horizontal")  # noqa: F841
-        dst_d = flip_img(src, "diagonal")  # noqa: F841
-        # from cvutils import imshow
-        # imshow(src, "ori", 0, 1)
-        # imshow(dst_v, "vertical", 0, 1)
-        # imshow(dst_h, "horizontal", 0, 1)
-        # imshow(dst_d, "diagonal", 0, 1)
+        for flip_flag in self.flip_flags:
+            dst = flip_img(src, flip_flag)  # noqa: F841
+
+            # from cvutils import imshow
+            #
+            # imshow(src, "ori", 0, 1)
+            # imshow(dst, flip_flag, 0, 1)
 
     def test_flip_pts(self):
         src = copy.deepcopy(self.src)
-        src_pts = np.array(
-            [
-                [self.block_wh * 0.5, self.block_wh * 1.5],
-                [self.block_wh * 2.0, 0.0],
-                [self.block_wh * 2.5, self.block_wh * 0.5],
-                [self.block_wh * 1.5, self.block_wh * 1.8],
-            ]
-        )
-        dst_pts_v = flip_pts(  # noqa: F841
-            src_pts, shape=src.shape[:2], flip_flag="vertical"
-        )
-        dst_pts_h = flip_pts(  # noqa: F841
-            src_pts, shape=src.shape[:2], flip_flag="horizontal"
-        )
-        dst_pts_d = flip_pts(  # noqa: F841
-            src_pts, shape=src.shape[:2], flip_flag="diagonal"
-        )
-        # from cvutils import PolygonROI, imshow
-        # src_pts_polygon = PolygonROI(src_pts)
-        # dst_pts_polygon_v = PolygonROI(dst_pts_v)
-        # dst_pts_polygon_h = PolygonROI(dst_pts_h)
-        # dst_pts_polygon_d = PolygonROI(dst_pts_d)
-        # src_with_pts = src.copy()
-        # src_pts_polygon.draw(src_with_pts, color=(0, 0, 255), thickness=1)
-        # x = src_with_pts.copy()
-        # dst_pts_polygon_v.draw(x, color=(255, 0, 0), thickness=1)
-        # imshow(x, "src_v", 0, 1)
-        # x = src_with_pts.copy()
-        # dst_pts_polygon_h.draw(x, color=(255, 0, 0), thickness=1)
-        # imshow(x, "src_h", 0, 1)
-        # x = src_with_pts.copy()
-        # dst_pts_polygon_d.draw(x, color=(255, 0, 0), thickness=1)
-        # imshow(x, "src_d", 0, 1)
+        src_pts = self.pts
+        for flip_flag in self.flip_flags:
+            dst_pts = flip_pts(src_pts, src.shape[:2], flip_flag)  # noqa: F841
+
+            # from cvutils import PolygonROI, imshow
+            # src_pts_polygon = PolygonROI(src_pts)
+            # dst_pts_polygon = PolygonROI(dst_pts)
+            #
+            # src_with_pts = src.copy()
+            # src_pts_polygon.draw(src_with_pts, color=(0, 0, 255), thickness=1)
+            # dst_pts_polygon.draw(src_with_pts, color=(255, 0, 0), thickness=1)
+            # imshow(src_with_pts, flip_flag, 0, 1)
+
+    def test_filp_img_with_pts(self):
+        src = copy.deepcopy(self.src)
+        src_pts = self.pts
+        for flip_flag in self.flip_flags:
+            dst, dst_pts = flip_img_with_pts(src, src_pts, flip_flag)  # noqa: F841
+            # from cvutils import PolygonROI, imshow
+            # src_pts_polygon = PolygonROI(src_pts)
+            # dst_pts_polygon = PolygonROI(dst_pts)
+            # src_with_pts = src.copy()
+            # src_pts_polygon.draw(src_with_pts, color=(0, 0, 255), thickness=1)
+            # dst_pts_polygon.draw(dst, color=(255, 0, 0), thickness=1)
+            # imshow(src_with_pts, "src", 0, 1)
+            # imshow(dst, flip_flag, 0, 1)
 
     def test_rotate_and_scale_img(self):
         src = copy.deepcopy(self.src)
