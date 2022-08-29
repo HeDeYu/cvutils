@@ -15,7 +15,7 @@ __all__ = [
     "resize_img",
     "put_fg_img_on_bg_img",
     "rotate_and_scale_img",
-    # "flip_img",
+    "flip_img",
 ]
 
 
@@ -132,10 +132,14 @@ def put_fg_img_on_bg_img(fg_img, bg_img, top_left_xy=(0, 0), mask=None):
             return bg_img
 
 
-# def flip_img(img, flip_flag):
-#     assert flip_flag in ["h_flip", "v_flip"]
-#     if flip_flag == "v_flip":
-#         return cv2.flip(img, 0)
+def flip_img(img, flip_flag):
+    assert flip_flag in ["horizontal", "vertical", "diagonal"]
+    if flip_flag == "vertical":
+        return cv2.flip(img, 0)
+    elif flip_flag == "horizontal":
+        return cv2.flip(img, 1)
+    else:
+        return cv2.flip(img, -1)
 
 
 def rotate_and_scale_img(img, rotation_angle_degree, scale=1.0, return_mask=True):
