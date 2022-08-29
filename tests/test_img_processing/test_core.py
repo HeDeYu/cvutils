@@ -10,7 +10,7 @@ import numpy as np
 
 from cvutils.img_processing import (
     flip_img,
-    flip_img_with_pts,
+    flip_img_with_roi,
     flip_pts,
     rotate_and_scale_img,
 )
@@ -86,11 +86,11 @@ class TestCore(TestCase):
             # dst_pts_polygon.draw(src_with_pts, color=(255, 0, 0), thickness=1)
             # imshow(src_with_pts, flip_flag, 0, 1)
 
-    def test_filp_img_with_pts(self):
+    def test_filp_img_with_roi(self):
         src = copy.deepcopy(self.src)
         src_pts = self.pts
         for flip_flag in self.flip_flags:
-            dst, dst_pts = flip_img_with_pts(src, src_pts, flip_flag)  # noqa: F841
+            dst, dst_pts = flip_img_with_roi(src, src_pts, flip_flag)  # noqa: F841
             # from cvutils import PolygonROI, imshow
             # src_pts_polygon = PolygonROI(src_pts)
             # dst_pts_polygon = PolygonROI(dst_pts)

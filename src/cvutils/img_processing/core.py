@@ -17,7 +17,8 @@ __all__ = [
     "rotate_and_scale_img",
     "flip_img",
     "flip_pts",
-    "flip_img_with_pts",
+    "flip_img_with_roi",
+    "flip_img_with_rois",
 ]
 
 
@@ -161,9 +162,14 @@ def flip_pts(pts, shape, flip_flag):
     return np.matmul(M, pts.T).T + t
 
 
-def flip_img_with_pts(img, pts, flip_flag):
-    assert flip_flag in ["horizontal", "vertical", "diagonal"]
-    return flip_img(img, flip_flag), flip_pts(pts, img.shape, flip_flag)
+def flip_img_with_roi(img, roi, flip_flag):
+    return flip_img(img, flip_flag), flip_pts(roi, img.shape, flip_flag)
+
+
+def flip_img_with_rois(img, rois, flip_flag):
+    return flip_img(img, flip_flag), [
+        flip_pts(roi, img.shape[:2], flip_flag) for roi in rois
+    ]
 
 
 def rotate_and_scale_img(img, rotation_angle_degree, scale=1.0, return_mask=True):
