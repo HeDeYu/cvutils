@@ -379,6 +379,10 @@ def imshow(
         int: ASCII code of pressed key, -1 if `wait_key_ms` is negative, which
             means no waiting for key press
     """
+    if flags == 0:
+        flags = cv2.WINDOW_NORMAL
+    elif flags == 1:
+        flags = cv2.WINDOW_AUTOSIZE
     cv2.namedWindow(win_name, flags)
     cv2.imshow(win_name, img)
 
