@@ -2,12 +2,12 @@
 # @FileName :core.py
 # @Author   :Deyu He
 # @Time     :2022/7/20 10:37
-
 from typing import Tuple, Union
 
 import cv2
 import numpy as np
 
+from ..core.core import as_array, check_array_shape
 from .polygon_roi import PolygonROI
 
 __all__ = [
@@ -16,6 +16,7 @@ __all__ = [
     "put_fg_img_on_bg_img",
     "rotate_and_scale_img",
     "flip_img",
+    "flip_pts",
 ]
 
 
@@ -140,6 +141,23 @@ def flip_img(img, flip_flag):
         return cv2.flip(img, 1)
     else:
         return cv2.flip(img, -1)
+
+
+def flip_pts(pts, shape, flip_flag):
+    assert flip_flag in ["horizontal", "vertical", "diagonal"]
+    pts = as_array(pts)
+    check_array_shape(valid_shape=(-1, 2), pts_nx2=pts)
+    H, W = shape[:2]
+    if flip_flag == "vertical":
+        M = np.array([[1.0, 0.0], [0.0, -1.0]])
+        t = np.array([0.0, float(H)])
+    elif flip_flag == "horizontal":
+        M = np.array([[-1.0, 0.0], [0.0, 1.0]])
+        t = np.array([float(W), 0.0])
+    else:
+        M = np.array([[-1.0, 0.0], [0.0, -1.0]])
+        t = np.array([float(W), float(H)])
+    return np.matmul(M, pts.T).T + t
 
 
 def rotate_and_scale_img(img, rotation_angle_degree, scale=1.0, return_mask=True):
