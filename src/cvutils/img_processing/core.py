@@ -109,3 +109,20 @@ def put_fg_img_on_bg_img(fg_img, bg_img, top_left_xy=(0, 0), mask=None):
                 :,
             ] = fg_img.copy()
             return bg_img
+    else:
+        if len(fg_img.shape) == 3:
+            bg_ori = bg_img[
+                top_left_xy[1] : bottom_right_xy[1],
+                top_left_xy[0] : bottom_right_xy[0],
+                :,
+            ].copy()
+            mask = mask == 0
+            mask = mask.astype(np.uint8)
+            bg_img[
+                top_left_xy[1] : bottom_right_xy[1],
+                top_left_xy[0] : bottom_right_xy[0],
+                :,
+            ] = (
+                bg_ori * mask[:, :, None] + fg_img
+            )
+            return bg_img

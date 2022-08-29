@@ -355,35 +355,34 @@ class RectROI(BaseROI):
         return x0, y0, x1 - x0, y1 - y0
 
     def crop(self, img: np.ndarray, copy_=True) -> np.ndarray:
-        pass
-        # """Cut roi sub-image from given image
-        #
-        # The bounding box of the roi will be calculated first, and then
-        # use it to cut sub-image from given image.
-        #
-        # Args:
-        #     img (np.ndarray): source image, 2d or 3d array
-        #     copy_ (bool): copy from source image or not
-        #
-        # Returns:
-        #     np.ndarray: extracted image
-        # """
-        # if img.ndim < 2:
-        #     raise ValueError(f"expect ndim > 2 for `img`, while input is {img.ndim}")
-        #
-        # img_h, img_w = img.shape[:2]
-        # x, y, w, h = self.valid_bounding_rect((img_w, img_h))
-        #
-        # # check adjusted roi
-        # if (w <= 0) or (h <= 0):
-        #     raise ROIError(f"empty roi {self} on given image!")
-        #
-        # # extract from source image
-        # roi_on_source_img = img[y : (y + h), x : (x + w)]
-        #
-        # roi_img = np.copy(roi_on_source_img) if copy_ else roi_on_source_img
-        #
-        # return roi_img
+        """Cut roi sub-image from given image
+
+        The bounding box of the roi will be calculated first, and then
+        use it to cut sub-image from given image.
+
+        Args:
+            img (np.ndarray): source image, 2d or 3d array
+            copy_ (bool): copy from source image or not
+
+        Returns:
+            np.ndarray: extracted image
+        """
+        if img.ndim < 2:
+            raise ValueError(f"expect ndim > 2 for `img`, while input is {img.ndim}")
+
+        img_h, img_w = img.shape[:2]
+        x, y, w, h = self.valid_bounding_rect((img_w, img_h))
+
+        # check adjusted roi
+        if (w <= 0) or (h <= 0):
+            raise ValueError(f"empty roi {self} on given image!")
+
+        # extract from source image
+        roi_on_source_img = img[y : (y + h), x : (x + w)]
+
+        roi_img = np.copy(roi_on_source_img) if copy_ else roi_on_source_img
+
+        return roi_img
 
     def cut_img(self, img: np.ndarray, copy_=True) -> np.ndarray:
         pass
