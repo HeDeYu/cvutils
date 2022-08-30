@@ -120,61 +120,31 @@ def put_fg_img_on_bg_img(fg_img, bg_img, top_left_xy=(0, 0), mask=None):
             return bg_img
     else:
         if len(fg_img.shape) == 3:
-            # bg_ori = bg_img[
-            #     top_left_xy[1] : bottom_right_xy[1],
-            #     top_left_xy[0] : bottom_right_xy[0],
-            #     :,
-            # ].copy()
-            # mask_zeros = mask == 0
-            # mask_zeros = mask_zeros.astype(np.uint8)
-            #
-            # mask = mask.astype(np.uint8)
-            #
-            # mask_padded = cv2.copyMakeBorder(mask, 5, 5, 5, 5, cv2.BORDER_CONSTANT, 0)
-            # mask_blur = cv2.GaussianBlur(mask_padded, (9, 9), 0)[5:-5, 5:-5]
-
-            temp = bg_img[:, :, :]
-            # temp = np.zeros_like(bg_img)
-            border = 10
-            # temp = cv2.copyMakeBorder(temp, border, border, border, border, cv2.BORDER_REPLICATE)
-            temp[
+            bg_img[
                 top_left_xy[1] : bottom_right_xy[1],
                 top_left_xy[0] : bottom_right_xy[0],
                 :,
             ] = fg_img
-
-            from ..highgui.core import imshow
 
             mask_full = np.zeros(bg_img.shape[:2], dtype=np.uint8)
             mask_full[
                 top_left_xy[1] : bottom_right_xy[1],
                 top_left_xy[0] : bottom_right_xy[0],
             ] = mask
-            # mask_full = cv2.GaussianBlur(
-            #     cv2.copyMakeBorder(mask_full, border, border,border,border, cv2.BORDER_CONSTANT, 0),
-            #     (15,15),
-            #     0
-            # )[border:-border,border:-border]
-            mask_full = cv2.GaussianBlur(
-                cv2.copyMakeBorder(
-                    mask_full, border, border, border, border, cv2.BORDER_CONSTANT, 0
-                ),
-                (15, 15),
-                0,
-            )[border:-border, border:-border]
-            imshow(mask_full, "m_blur", 0, 1)
+            mask_full = mask_full - cv2.erode(
+                mask_full, cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+            )
+            mask_full = cv2.dilate(
+                mask_full,
+                cv2.getStructuringElement(cv2.MORPH_CROSS, (5, 5)),
+                iterations=2,
+            )
 
-            mask_full = mask_full.astype(np.float) / 255.0
-            mask_inv = 1.0 - mask_full
+            bg_img_blur = cv2.GaussianBlur(bg_img, (5, 5), 0)
+            mask_full = np.dstack((mask_full, mask_full, mask_full))
+            bg_img_with_mask_blur = np.where(mask_full > 0, bg_img_blur, bg_img)
 
-            # bg_img = cv2.copyMakeBorder(bg_img, border, border, border, border, cv2.BORDER_REPLICATE)
-            bg_img = bg_img * mask_inv[:, :, None] + temp * mask_full[:, :, None]
-            bg_img = bg_img.astype(np.uint8)
-            # bg_img = bg_img[border:-border, border:-border, :]
-
-            imshow(bg_img, "ret", 0, 1)
-            cv2.destroyAllWindows()
-            return bg_img
+            return bg_img_with_mask_blur
 
 
 def flip_img(img, flip_flag):
