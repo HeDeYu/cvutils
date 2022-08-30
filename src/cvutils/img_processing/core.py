@@ -2,6 +2,7 @@
 # @FileName :core.py
 # @Author   :Deyu He
 # @Time     :2022/7/20 10:37
+import random
 from typing import Tuple, Union
 
 import cv2
@@ -17,8 +18,9 @@ __all__ = [
     "rotate_and_scale_img",
     "flip_img",
     "flip_pts",
-    "flip_img_with_roi",
     "flip_img_with_rois",
+    "random_flip_img_with_rois",
+    "random_rotate_and_scale_img_with_rois",
 ]
 
 
@@ -118,20 +120,60 @@ def put_fg_img_on_bg_img(fg_img, bg_img, top_left_xy=(0, 0), mask=None):
             return bg_img
     else:
         if len(fg_img.shape) == 3:
-            bg_ori = bg_img[
+            # bg_ori = bg_img[
+            #     top_left_xy[1] : bottom_right_xy[1],
+            #     top_left_xy[0] : bottom_right_xy[0],
+            #     :,
+            # ].copy()
+            # mask_zeros = mask == 0
+            # mask_zeros = mask_zeros.astype(np.uint8)
+            #
+            # mask = mask.astype(np.uint8)
+            #
+            # mask_padded = cv2.copyMakeBorder(mask, 5, 5, 5, 5, cv2.BORDER_CONSTANT, 0)
+            # mask_blur = cv2.GaussianBlur(mask_padded, (9, 9), 0)[5:-5, 5:-5]
+
+            temp = bg_img[:, :, :]
+            # temp = np.zeros_like(bg_img)
+            border = 10
+            # temp = cv2.copyMakeBorder(temp, border, border, border, border, cv2.BORDER_REPLICATE)
+            temp[
                 top_left_xy[1] : bottom_right_xy[1],
                 top_left_xy[0] : bottom_right_xy[0],
                 :,
-            ].copy()
-            mask = mask == 0
-            mask = mask.astype(np.uint8)
-            bg_img[
+            ] = fg_img
+
+            from ..highgui.core import imshow
+
+            mask_full = np.zeros(bg_img.shape[:2], dtype=np.uint8)
+            mask_full[
                 top_left_xy[1] : bottom_right_xy[1],
                 top_left_xy[0] : bottom_right_xy[0],
-                :,
-            ] = (
-                bg_ori * mask[:, :, None] + fg_img
-            )
+            ] = mask
+            # mask_full = cv2.GaussianBlur(
+            #     cv2.copyMakeBorder(mask_full, border, border,border,border, cv2.BORDER_CONSTANT, 0),
+            #     (15,15),
+            #     0
+            # )[border:-border,border:-border]
+            mask_full = cv2.GaussianBlur(
+                cv2.copyMakeBorder(
+                    mask_full, border, border, border, border, cv2.BORDER_CONSTANT, 0
+                ),
+                (15, 15),
+                0,
+            )[border:-border, border:-border]
+            imshow(mask_full, "m_blur", 0, 1)
+
+            mask_full = mask_full.astype(np.float) / 255.0
+            mask_inv = 1.0 - mask_full
+
+            # bg_img = cv2.copyMakeBorder(bg_img, border, border, border, border, cv2.BORDER_REPLICATE)
+            bg_img = bg_img * mask_inv[:, :, None] + temp * mask_full[:, :, None]
+            bg_img = bg_img.astype(np.uint8)
+            # bg_img = bg_img[border:-border, border:-border, :]
+
+            imshow(bg_img, "ret", 0, 1)
+            cv2.destroyAllWindows()
             return bg_img
 
 
@@ -162,35 +204,48 @@ def flip_pts(pts, shape, flip_flag):
     return np.matmul(M, pts.T).T + t
 
 
-def flip_img_with_roi(img, roi, flip_flag):
-    return flip_img(img, flip_flag), flip_pts(roi, img.shape, flip_flag)
-
-
 def flip_img_with_rois(img, rois, flip_flag):
     return flip_img(img, flip_flag), [
         flip_pts(roi, img.shape[:2], flip_flag) for roi in rois
     ]
 
 
+def random_flip_img_with_rois(img, rois):
+    map_ = {
+        0: "none",
+        1: "vertical",
+        2: "horizontal",
+        3: "diagonal",
+    }
+    flip_flag = map_[random.randrange(0, 4)]
+    if flip_flag == "none":
+        return img, rois
+    return flip_img_with_rois(img, rois, flip_flag)
+
+
 def rotate_and_scale_img(img, rotation_angle_degree, scale=1.0, return_mask=True):
     h, w = img.shape[:2]
+    # from loguru import logger
+    # logger.debug(f"ori: {h}, {w}")
     M = cv2.getRotationMatrix2D(
         center=(0.0, 0.0), angle=rotation_angle_degree, scale=scale
     )
     v = np.array(
         [
             [0, 0, 1],
-            [0, h, 1],
-            [w, h, 1],
-            [w, 0, 1],
+            [0, h - 1, 1],
+            [w - 1, h - 1, 1],
+            [w - 1, 0, 1],
         ]
     )
     v_new_t = np.matmul(M, v.transpose())
 
     x_min, y_min = np.min(v_new_t, axis=1)
     x_max, y_max = np.max(v_new_t, axis=1)
-    w_new = round(x_max - x_min) + 1
-    h_new = round(y_max - y_min) + 1
+    w_new = round(x_max - x_min)
+    h_new = round(y_max - y_min)
+    # logger.debug(f"{h_new}, {w_new}")
+    # logger.debug(f"{-y_min}, {-x_min}")
     M[:, 2] += np.array([-x_min, -y_min])
 
     img_ret = cv2.warpAffine(img, M, (w_new, h_new))
@@ -203,3 +258,49 @@ def rotate_and_scale_img(img, rotation_angle_degree, scale=1.0, return_mask=True
         return img_ret, M, mask
     else:
         return img_ret, M, None
+
+
+def random_rotate_and_scale_img_with_rois(
+    img,
+    rois=None,
+    rotation_angle_degree_range=None,
+    rotation_angle_degree_list=None,
+    scale_range=None,
+    scale_list=None,
+    return_mask=True,
+):
+    assert (
+        rotation_angle_degree_list is not None
+        or rotation_angle_degree_range is not None
+    )
+    assert not (
+        rotation_angle_degree_list is not None
+        and rotation_angle_degree_range is not None
+    )
+    assert scale_list is not None or scale_range is not None
+    assert not (scale_list is not None and scale_range is not None)
+    if rotation_angle_degree_list is not None:
+        random_angle = rotation_angle_degree_list[
+            random.randint(0, len(rotation_angle_degree_list) - 1)
+        ]
+    else:
+        raise NotImplementedError
+    if scale_range is not None:
+        random_scale = (
+            random.random() * (scale_range[1] - scale_range[0]) + scale_range[0]
+        )
+    else:
+        raise NotImplementedError
+
+    dst_img, M, mask = rotate_and_scale_img(
+        img,
+        rotation_angle_degree=random_angle,
+        scale=random_scale,
+        return_mask=return_mask,
+    )
+    dst_rois = list()
+    for roi in rois:
+        pts = as_array(roi)
+        check_array_shape(valid_shape=(-1, 2), pts_nx2=pts)
+        dst_rois.append(np.matmul(M[:, :2], pts.T).T + M[:, 2])
+    return dst_img, dst_rois, mask
