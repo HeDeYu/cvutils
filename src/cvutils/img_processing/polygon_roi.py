@@ -68,7 +68,8 @@ class PolygonROI(BaseROI):
             thickness=-1,
             lineType=cv2.LINE_8,
         )
-        area = int(np.sum(img))
+        area = cv2.countNonZero(img)
+        # area = int(np.sum(img))
         return area
 
     @property
@@ -280,21 +281,26 @@ class PolygonROI(BaseROI):
 
         return flag >= 0
 
-    def cal_intersection(self, polygon_roi):
+    def iou(self, polygon_roi):
         x, y, w, h = self.bounding_rect
         max_xy = x + w, y + h
+        # min_xy = x, y
         x, y, w, h = polygon_roi.bounding_rect
-        max_xy = max(max_xy[0], x + w), max(max_xy[1], y + h)
+        # min_xy = min(min_xy[0], x), min(min_xy[0], y),
+        max_xy = max(max_xy[0], x + w) + 1, max(max_xy[1], y + h) + 1
 
         mask_self = np.zeros((max_xy[1], max_xy[0]))
         mask = np.zeros((max_xy[1], max_xy[0]))
-        self.draw(mask_self, 255, thickness=-1)
-        polygon_roi.draw(mask, 255, thickness=-1)
+        self.draw(mask_self, 1, thickness=-1)
+        polygon_roi.draw(mask, 1, thickness=-1)
+        intersection = np.sum(np.logical_and(mask_self, mask).astype(np.uint8))
+        union = np.sum(np.logical_or(mask_self, mask).astype(np.uint8))
+        iou = float(intersection) / float(union)
 
-        return np.sum(np.logical_and(mask_self, mask).astype(np.uint8))
+        return iou, intersection, union
 
     def overlap(self, polygon_roi):
-        return self.cal_intersection(polygon_roi) > 0
+        return self.iou(polygon_roi)[1] > 0
 
     def dist(self, pts_nx2, measure_dist=True) -> List:
         # check_array(shape=(-1, 2), pts_nx2=pts_nx2)
@@ -399,3 +405,16 @@ class PolygonROI(BaseROI):
             cnt = np.array([x[0] for x in cnt])
             cnt_items.append(PolygonROI(cnt))
         return cnt_items
+
+    @classmethod
+    def create_from_rect_xyxy(cls, x0, y0, x1, y1):
+        return cls(
+            np.array(
+                [
+                    [x0, y0],
+                    [x1, y0],
+                    [x1, y1],
+                    [x0, y1],
+                ]
+            )
+        )
