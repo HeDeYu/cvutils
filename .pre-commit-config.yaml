@@ -38,12 +38,12 @@ repos:
     types: [python]
     require_serial: true
 
-  - id: gitlint
-    name: gitlint
-    stages: [commit-msg]
-    language: system
-    entry: tox
-    args: [-e gitlint, --, --msg-filename]
+#  - id: gitlint
+#    name: gitlint
+#    stages: [commit-msg]
+#    language: system
+#    entry: tox
+#    args: [-e gitlint, --, --msg-filename]
 
 #  - id: test
 #    name: test

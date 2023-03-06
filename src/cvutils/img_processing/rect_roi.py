@@ -198,25 +198,27 @@ class RectROI(BaseROI):
         rot_center=None,
         return_trans_M=False,
     ):
-        pass
-        # self._angle_deg = self._angle_deg + rotate_angle_deg
-        #
-        # if rot_center is None:
-        #     rot_center = tuple(self._cxcy.tolist())
-        #
-        # matrix = cv2.getRotationMatrix2D(
-        #     center=rot_center, angle=-rotate_angle_deg, scale=1
-        # )
-        # matrix[:, 2] += translation
-        # matrix = np.concatenate([matrix, np.array([[0.0, 0.0, 1.0]])], axis=0)
-        #
+        self._angle_deg = self._angle_deg + rotate_angle_deg
+
+        if rot_center is None:
+            rot_center = tuple(self._cxcy.tolist())
+
+        matrix = cv2.getRotationMatrix2D(
+            center=rot_center, angle=-rotate_angle_deg, scale=1
+        )
+        matrix[:, 2] += translation
+        matrix = np.concatenate([matrix, np.array([[0.0, 0.0, 1.0]])], axis=0)
+
         # cxcy_2x1 = self._cxcy[..., None]
-        # self._cxcy = project_pts(cxcy_2x1, matrix).ravel()
-        #
-        # if not return_trans_M:
-        #     return None
-        #
-        # return matrix
+
+        cxcy_homo = np.array([self._cxcy[0], self._cxcy[1], 1.0])[..., None]
+
+        self._cxcy = np.array(np.matmul(matrix, cxcy_homo).ravel()[:2])
+
+        if not return_trans_M:
+            return None
+
+        return matrix
 
     def scale(self, fx, fy=None, return_trans_M=False):  # type: ignore
         """Scale(inplace) rectangle
@@ -383,18 +385,6 @@ class RectROI(BaseROI):
         roi_img = np.copy(roi_on_source_img) if copy_ else roi_on_source_img
 
         return roi_img
-
-    def cut_img(self, img: np.ndarray, copy_=True) -> np.ndarray:
-        pass
-        #
-        # warnings.warn(
-        #     "\n'cut_img' is deprecated and will be removed in a future version. "
-        #     "Please use the alternative function 'crop'.",
-        #     category=DeprecationWarning,
-        # )
-        #
-        # roi_img = self.crop(img=img, copy_=copy_)
-        # return roi_img
 
     # TODO: more efficient implement
     def contain(self, xy):
